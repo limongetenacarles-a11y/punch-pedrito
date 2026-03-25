@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PUNCH PEDRITO</title>
+<style>
+body { margin:0; font-family: Arial; color:white; text-align:center; overflow:hidden; }
+
+body::before {
+ content:"";
+ position:fixed;
+ top:0; left:0;
+ width:100%; height:100%;
+ background: linear-gradient(270deg, #0f172a, #1e293b, #0f172a);
+ background-size:600% 600%;
+ animation: bgMove 10s ease infinite;
+ z-index:-2;
+}
+
+#effects {
+ position:fixed;
+ top:0; left:0;
+ width:100%; height:100%;
+ pointer-events:none;
+ z-index:1;
+}
+
+@keyframes bgMove {
+ 0%{background-position:0% 50%;}
+ 50%{background-position:100% 50%;}
+ 100%{background-position:0% 50%;}
+}
+
+h1 { margin-top:20px; }
+#score { font-size:48px; margin:20px; }
+
+#clickBtn {
+ background:#38bdf8;
+ border:none;
+ padding:20px;
+ font-size:20px;
+ border-radius:10px;
+ cursor:pointer;
+ transition: transform 0.1s;
+}
+#clickBtn:active { transform: scale(0.9); }
+
+#shopBtn { background:#facc15; padding:10px; border-radius:10px; }
+
+#shopMenu {
+ position:fixed;
+ top:0; right:-300px;
+ width:300px; height:100%;
+ background:#111827;
+ transition:0.4s;
+ padding:20px;
+ overflow-y:auto;
+ z-index:2;
+}
+#shopMenu.open { right:0; }
+.upgradeItem { background:#22c55e; margin:10px 0; padding:10px; border-radius:10px; cursor:pointer; }
+
+#ending {
+ position:fixed; top:0; left:0;
+ width:100%; height:100%;
+ background:black; display:none;
+ align-items:center; justify-content:center; flex-direction:column;
+ z-index:3;
+}
+
+.floating {
+ position:absolute;
+ font-size:40px;
+ animation: floatUp 2s linear forwards;
+}
+
+@keyframes floatUp {
+ from { transform:translateY(0); opacity:1; }
+ to { transform:translateY(-200px); opacity:0; }
+}
+</style>
+</head>
+<body>
+
+<h1>PUNCH PEDRITO 👊🔥</h1>
+<div id="score">0</div>
+
+<button id="clickBtn" onclick="clickCookie()">CLICK 💥</button>
+
+<br>
+<button id="shopBtn" onclick="toggleShop()">🛒 TIENDA</button>
+
+<div id="shopMenu">
+ <h2>Tienda</h2>
+ <div id="items"></div>
+</div>
+
+<div id="effects"></div>
+
+<div id="ending">
+ <h1>👑 HAS COMPLETADO EL JUEGO 👑</h1>
+</div>
+
+<script>
+let score=0;
+let perClick=1;
+let auto=0;
+let items=[
+ {name:"+1 Punch", cost:10, type:"click", value:1},
+ {name:"Auto Punch", cost:50, type:"auto", value:1},
+ {name:"Super Punch", cost:500, type:"click", value:5},
+ {name:"Mega Punch", cost:2000, type:"auto", value:10},
+ {name:"Factory", cost:10000, type:"auto", value:50},
+ {name:"Bank", cost:30000, type:"auto", value:200}
+];
+
+function updateUI(){
+ document.getElementById("score").innerText=Math.floor(score);
+ renderShop();
+}
+
+function clickCookie(){
+ score+=perClick;
+ spawnEffect();
+ checkEnd();
+ updateUI();
+}
+
+function spawnEffect(){
+ let el=document.createElement("div");
+ el.className="floating";
+ el.innerText="🐒";
+ el.style.left=Math.random()*80+"%";
+ el.style.top="60%";
+ document.getElementById("effects").appendChild(el);
+ setTimeout(()=>el.remove(),2000);
+}
+
+function buy(i){
+ let item=items[i];
+ if(score>=item.cost){
+  score-=item.cost;
+  if(item.type=="click") perClick+=item.value;
+  if(item.type=="auto") auto+=item.value;
+  item.cost=Math.floor(item.cost*1.6);
+  updateUI();
+ }
+}
+
+function renderShop(){
+ let html="";
+ items.forEach((it,i)=>{
+  if(score>=it.cost/2){
+   html+=`<div class='upgradeItem' onclick='buy(${i})'>${it.name} (${it.cost})</div>`;
+  }
+ });
+ document.getElementById("items").innerHTML=html;
+}
+
+function toggleShop(){
+ document.getElementById("shopMenu").classList.toggle("open");
+}
+
+function checkEnd(){ if(score>=1000000){ document.getElementById("ending").style.display="flex"; } }
+
+setInterval(()=>{ score+=auto; checkEnd(); updateUI(); },1000);
+
+updateUI();
+</script>
+
+</body>
+</html>
